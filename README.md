@@ -18,7 +18,7 @@ website: [bookly1](https://book-registration.ddns.net/api/v1/docs), [bookly2](ht
 
 ## Background Task + Message Queue
 - Dramatiq
-    - Redis
+- Redis
 
 # Test
 - Pytest
