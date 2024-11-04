@@ -20,10 +20,10 @@ website: [bookly1](https://book-registration.ddns.net/api/v1/docs), [bookly2](ht
 - Dramatiq
 - Redis
 
-# Test
+## Test
 - Pytest
 
-# Deploy
+## Deploy
 - DNS: No-ip
 - SSL: let's encrypt
 - AWS
