@@ -15,8 +15,9 @@ website: [bookly1](https://book-registration.ddns.net/api/v1/docs), [bookly2](ht
 - JWT : pyJWT
 - Email verification: Google Gmail API
 
-## Message Queue
-- Redis: aioredis
+## Background Task + Message Queue
+- Dramatiq
+    - Redis
 
 # Test
 - Pytest
