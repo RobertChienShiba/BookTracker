@@ -8,6 +8,7 @@ website: [bookly1](https://book-registration.ddns.net/api/v1/docs), [bookly2](ht
 - ORM: SQLAlchemy
     - sqlite3
     - aiosqlite
+    - alembic
 
 - Redis: aioredis
 
