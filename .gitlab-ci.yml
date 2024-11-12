@@ -8,7 +8,6 @@ workflow:
 
 variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE
-  GIT_CLEAN_FLAGS: -ffdx
 
 
 stages:          # List of stages for jobs, and their order of execution
@@ -46,6 +45,7 @@ build-image-job:       # This job runs in the build stage, which runs first.
     - ec2
     - shell
   before_script:
+    - sudo chmod -R 777 .;
     - export VERSION=$(grep -oP '(?<=version = ")[^"]+' src/__init__.py)-$CI_PIPELINE_IID
     - echo "VERSION=$VERSION" >> build.env
   script:
@@ -68,7 +68,7 @@ build-image-job:       # This job runs in the build stage, which runs first.
     DEPLOY_ENV: ""
     APP_PORT: ""
   before_script:
-    - find . -name "*.pyc" -exec rm -f {} \;
+    - sudo chmod -R 777 .;
   script:
     - echo "Deploying application..."
     - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 
