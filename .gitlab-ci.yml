@@ -8,6 +8,7 @@ workflow:
 
 variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE
+  GIT_CLEAN_FLAGS: -ffdx
 
 
 stages:          # List of stages for jobs, and their order of execution
