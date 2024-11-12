@@ -1,8 +1,8 @@
-version: "3.8"
+version: "3.9"
 
 services:
   web:
-    build: .
+    build: ${IMAGE_NAME}:${IMAGE_TAG}
 
     restart: always
     
@@ -14,12 +14,16 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - JWT_ALGORITHM=${JWT_ALGORITHM}
       - MAIL_FROM=${MAIL_FROM}
-      - DOMAIN=${DOMAIN}
       - REDIS_LOGOUT_URL=${REDIS_LOGOUT_URL}
       - REDIS_MQ_URL=${REDIS_MQ_URL}
-
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_SERVER=${MAIL_SERVER}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - DOMAIN=${DOMAIN}
     ports:
-      - "8000:8000"
+      - "${APP_PORT}:8000"
 
     depends_on:
       - redis
@@ -41,7 +45,7 @@ services:
         #   - redis
 
   worker:
-    build: .
+    build: ${IMAGE_NAME}:${IMAGE_TAG}
 
     restart: always
 

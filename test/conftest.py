@@ -8,8 +8,7 @@ from src.auth.dependencies import get_current_user
 from src.books.routes import access_token_bearer
 from src.auth.routes import refresh_token_bearer
 from src import app
-from src.config import Config 
-from src.test.utils import(
+from test.utils import(
     get_mock_session,
     mock_book,
     mock_tag,

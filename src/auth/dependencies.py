@@ -1,4 +1,5 @@
 from typing import Any, List
+from datetime import datetime
 
 from fastapi import Depends, Request, status
 from fastapi.exceptions import HTTPException
@@ -14,8 +15,7 @@ from .service import UserService
 from .utils import decode_token
 from src.errors import (
     InvalidToken,
-    RefreshTokenRequired,
-    AccessTokenRequired,
+    RevokedToken,
     InsufficientPermission,
     AccountNotVerified,
 )
@@ -23,9 +23,9 @@ from src.errors import (
 user_service = UserService()
 
 
-class TokenBearer(HTTPBearer):
+class AccessTokenBearer(HTTPBearer):
     def __init__(self, auto_error=True):
-        super().__init__(auto_error=auto_error)
+            super().__init__(auto_error=auto_error)
 
     async def __call__(self, request: Request) -> HTTPAuthorizationCredentials | None:
         cred = await super().__call__(request)
@@ -34,32 +34,34 @@ class TokenBearer(HTTPBearer):
 
         token_data = decode_token(token)
 
-        if token_data is None:
+        if datetime.fromtimestamp(token_data["exp"]) <= datetime.now() or \
+        not await token_in_logout(token_data["jti"]):
             raise InvalidToken()
-
-        if await token_in_logout(token_data["jti"]):
-            raise InvalidToken()
-
-        self.verify_token_data(token_data)
 
         # print(token_data)
 
         return token_data
 
-    def verify_token_data(self, token_data):
-        raise NotImplementedError("Please Override this method in child classes")
 
+class RefreshTokenBearer(HTTPBearer):
+    def __init__(self, auto_error=True):
+        super().__init__(auto_error=auto_error)
 
-class AccessTokenBearer(TokenBearer):
-    def verify_token_data(self, token_data: dict) -> None:
-        if token_data and token_data["refresh"]:
-            raise AccessTokenRequired()
+    async def __call__(self, request: Request):
+        cred = await super().__call__(request)
 
+        token = cred.credentials
+        
+        token_data = decode_token(token)
+        
+        if datetime.fromtimestamp(token_data["exp"]) > datetime.now():
+            token_data["state"] = "Access Token has not expired yet"
+        elif not await token_in_logout(token_data["jti"]):
+            token_data["state"] = "Refresh Token has already expired"
+        else:
+            token_data["state"] = "Valid Refresh Token"
 
-class RefreshTokenBearer(TokenBearer):
-    def verify_token_data(self, token_data: dict) -> None:
-        if token_data and not token_data["refresh"]:
-            raise RefreshTokenRequired()
+        return token_data
 
 
 async def get_current_user(
@@ -84,3 +86,4 @@ class RoleChecker:
             return True
 
         raise InsufficientPermission()
+    

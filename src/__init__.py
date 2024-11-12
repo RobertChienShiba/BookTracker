@@ -7,7 +7,7 @@ from .errors import register_all_errors
 from .middleware import register_middleware
 
 
-version = "v1"
+version = "1.1.1"
 
 description = """
 A REST API for a book review web service.

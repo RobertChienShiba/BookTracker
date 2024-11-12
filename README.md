@@ -1,5 +1,6 @@
 # Bookly Backend Project
-website: [bookly1](https://book-registration.ddns.net/api/v1/docs), [bookly2](https://book-registration.ddns.net/api/v1/redoc), [openapi](https://book-registration.ddns.net/api/v1/openapi.json)
+Website: [bookly1](https://book-registration.ddns.net/api/1.1.1/docs), [bookly2](https://book-registration.ddns.net/api/1.1.1/redoc) \
+OpenAPI JSON: [openapi](https://book-registration.ddns.net/api/1.1.1/openapi.json)
 
 ## API (REST)
 - FastAPI
@@ -13,19 +14,20 @@ website: [bookly1](https://book-registration.ddns.net/api/v1/docs), [bookly2](ht
 - Redis: aioredis
 
 ## Authentication
-- JWT : pyJWT
-- Email verification: Google Gmail API
+- JWT: pyJWT
+- Email Verification: FastAPI-Mail
 
 ## Background Task + Message Queue
 - Dramatiq
 - Redis
 
-## Test
+## CI/CD
+- [Gitlab CI/CD](https://gitlab.com/RobertChienShiba/Bookly)
 - Pytest
 
 ## Deploy
 - DNS: No-ip
-- SSL: let's encrypt
+- SSL: Let's Encrypt
 - AWS
 - Nginx
 - Docker

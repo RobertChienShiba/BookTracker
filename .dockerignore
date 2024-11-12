@@ -1,0 +1,10 @@
+.dockerignore
+Dockerfile
+docker-compose.yml
+nginx/
+test/
+.env.example
+README.md
+LICENSE
+.git/
+.gitlab-ci.yml

@@ -3,6 +3,8 @@ from unittest.mock import patch
 from datetime import date
 import asyncio
 
+from src import version_prefix
+
 
 @patch("src.books.service.BookService.create_book")
 def test_create_cook(mock_create_book, test_book_client, test_book):
@@ -17,7 +19,7 @@ def test_create_cook(mock_create_book, test_book_client, test_book):
     )
 
     mock_create_book.return_value = test_book
-    response = test_book_client.post("/api/v1/books/", json=book_data, headers={"Authorization": "Bearer " + 'fake.jwt'})
+    response = test_book_client.post(f"{version_prefix}/books/", json=book_data, headers={"Authorization": "Bearer " + 'fake.jwt'})
 
     assert response.status_code == 201
     assert mock_create_book.called_once()
@@ -37,14 +39,14 @@ def test_fail_create_cook(mock_create_book, test_fail_book_client, test_book):
 
     mock_create_book.return_value = test_book
 
-    response = test_fail_book_client.post("/api/v1/books/", json=book_data, headers={"Authorization": "Bearer " + 'fake.jwt'})
+    response = test_fail_book_client.post(f"{version_prefix}/books/", json=book_data, headers={"Authorization": "Bearer " + 'fake.jwt'})
 
     assert response.status_code == 401
     assert mock_create_book.called_once()
 
 
 def test_fail_all_review(test_fail_review_client):
-    response = test_fail_review_client.get("/api/v1/reviews/")
+    response = test_fail_review_client.get(f"{version_prefix}/reviews/")
     assert response.status_code == 401
     data = response.json()
     assert data["message"] == "You do not have enough permissions to perform this action"
@@ -57,7 +59,7 @@ def test_add_book_tag(mock_add_tag, test_tag, test_tag_client, test_session):
 
     tag_data = {"name": "Science"}
 
-    response = test_tag_client.post("/api/v1/tags/", json=tag_data)
+    response = test_tag_client.post(f"{version_prefix}/tags/", json=tag_data)
     assert response.status_code == 201
     assert mock_add_tag.called_once_with(tag_data, test_session)
 

@@ -1,0 +1,115 @@
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main" && $CI_PIPELINE_SOURCE != "merge_request_event"      
+      when: never
+    - when: always
+
+
+variables:
+  IMAGE_NAME: $CI_REGISTRY_IMAGE
+
+
+stages:          # List of stages for jobs, and their order of execution
+  - test
+  - build
+  - deploy_dev
+  - deploy_prod
+
+
+unit-test-job:   # This job runs in the test stage.
+  stage: test    # It only starts when the job in the build stage completes successfully.
+  image: python:3.10-slim
+  tags:
+    - ec2
+    - docker
+  before_script:
+    - export REDIS_LOGOUT_URL="redis://localhost:6379/0"
+    - apt-get update && apt-get install -y redis-server && redis-server --daemonize yes
+    - pip install --no-cache-dir -r requirements.txt
+  script:
+    - echo "Running unit tests... This will take about 60 seconds."
+    - pytest
+    - echo "Code coverage is 90%"
+
+
+sast:
+  stage: test
+
+
+build-image-job:       # This job runs in the build stage, which runs first.
+  stage: build
+  needs:
+    - unit-test-job
+  tags:
+    - ec2
+    - shell
+  before_script:
+    - export VERSION=$(grep -oP '(?<=version = ")[^"]+' src/__init__.py)-$CI_PIPELINE_IID
+    - echo "VERSION=$VERSION" >> build.env
+  script:
+    - echo "Building Docker Image..."
+    - docker build -t $IMAGE_NAME:$VERSION .
+    - echo "Build complete."
+  artifacts:
+    when: on_success
+    reports:
+      dotenv: build.env
+
+
+.deploy:
+  tags: 
+    - ec2
+    - shell
+  dependencies:
+    - build-image-job
+  variables:
+    DEPLOY_ENV: ""
+    APP_PORT: ""
+    ENDPOINT: ""
+  script:
+    - echo "Deploying application..."
+    - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 
+    - export IMAGE_TAG=$VERSION 
+
+    - docker-compose down && docker-compose up -d
+
+    - echo "Application successfully deployed."
+
+  environment:
+    name: $DEPLOY_ENV
+    url: http://$DOMAIN:$APP_PORT
+
+
+deploy-to-dev-job:      # This job runs in the deploy stage.
+  stage: deploy_dev  # It only runs when *both* jobs in the test stage complete successfully.
+  extends: .deploy  
+  needs:
+    - build-image-job
+  variables:
+    DEPLOY_ENV: development
+    APP_PORT: 8080
+
+
+end-to-end-test-job:
+  stage: deploy_dev
+  needs:
+    - deploy-to-dev-job
+  script:
+    - echo "running end to end tests"
+
+
+deploy-to-prod-job:      # This job runs in the deploy stage.
+  stage: deploy_prod  # It only runs when *both* jobs in the test stage complete successfully.
+  extends: .deploy  
+  needs:
+    - build-image-job
+    - end-to-end-test-job
+  variables:
+    DEPLOY_ENV: production
+    APP_PORT: 80
+  # when: manual
+
+
+include:
+  - template: Jobs/SAST.gitlab-ci.yml

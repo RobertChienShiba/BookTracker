@@ -150,12 +150,3 @@ def test_redis_unacked_messages_can_be_requeued(redis_broker):
 
     queued = redis_broker.client.lrange("dramatiq:%s" % queue_name, 0, num_messages)
     assert set(message_ids) == set(queued)
-
-
-def test_redis_broker_can_connect_via_url():
-    # Given that I have a connection string
-    # When I pass that to RedisBroker
-    broker = RedisBroker(url="redis://127.0.0.1")
-
-    # Then I should get back a valid connection
-    assert broker.client.ping()

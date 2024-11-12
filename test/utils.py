@@ -1,5 +1,7 @@
 from unittest.mock import Mock, AsyncMock
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
+import uuid
+
 from src.auth.utils import generate_passwd_hash
 
 mock_session = AsyncMock()
@@ -53,5 +55,7 @@ def mock_token():
         role="user"
     )
     token["user"] = user_data
-    token["exp"] = (datetime.now() + timedelta(seconds=3600)).timestamp()
+    token["exp"] = (datetime.now(timezone.utc) + timedelta(seconds=3600)).timestamp()
+    token["jti"] = str(uuid.uuid4())
+    token["state"] = "Valid Refresh Token"
     return token

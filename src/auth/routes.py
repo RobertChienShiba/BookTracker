@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+import uuid
 
 from fastapi import APIRouter, Depends, status, BackgroundTasks, status
 from fastapi.exceptions import HTTPException
@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.db.main import get_session
-from src.db.redis import add_jti_to_logout
+from src.db.redis import add_jti_to_logout, remove_jti_from_logout
 
 from .dependencies import (
     AccessTokenBearer,
@@ -39,9 +39,7 @@ user_service = UserService()
 access_token_bearer = AccessTokenBearer()
 refresh_token_bearer = RefreshTokenBearer()
 role_checker = RoleChecker(["admin", "user"])
-
-
-REFRESH_TOKEN_EXPIRY = 2
+version = "1.1.1"
 
 
 @auth_router.post("/send_mail", include_in_schema=False)
@@ -62,7 +60,7 @@ async def resend_mail(emails: EmailModel):
 
     token = create_url_safe_token({"email": email})
 
-    link = f"http://{Config.DOMAIN}/api/v1/auth/verify/{token}"
+    link = f"http://{Config.DOMAIN}/api/{version}/auth/verify/{token}"
 
     html = f"""
     <h1>Verify your Email</h1>
@@ -97,7 +95,7 @@ async def create_user_Account(
 
     token = create_url_safe_token({"email": email})
 
-    link = f"http://{Config.DOMAIN}/api/v1/auth/verify/{token}"
+    link = f"http://{Config.DOMAIN}/api/{version}/auth/verify/{token}"
 
     html = f"""
     <h1>Verify your Email</h1>
@@ -153,25 +151,22 @@ async def login_users(
         password_valid = verify_password(password, user.password_hash)
 
         if password_valid:
+            jti = str(uuid.uuid4())
             access_token = create_access_token(
                 user_data={
                     "email": user.email,
                     "user_uid": user.uid,
                     "role": user.role,
-                }
+                },
+                jti=jti
             )
-
-            refresh_token = create_access_token(
-                user_data={"email": user.email, "user_uid": str(user.uid)},
-                refresh=True,
-                expiry=timedelta(days=REFRESH_TOKEN_EXPIRY),
-            )
-
+            
+            await add_jti_to_logout(jti)
+            
             return JSONResponse(
                 content={
                     "message": "Login successful",
                     "access_token": access_token,
-                    "refresh_token": refresh_token,
                     "user": {"email": user.email, "uid": user.uid},
                 }
             )
@@ -181,14 +176,18 @@ async def login_users(
 
 @auth_router.get("/refresh_token")
 async def get_new_access_token(token_details: dict = Depends(refresh_token_bearer)):
-    expiry_timestamp = token_details["exp"]
 
-    if datetime.fromtimestamp(expiry_timestamp) > datetime.now():
-        new_access_token = create_access_token(user_data=token_details["user"])
+    # print(token_details["state"], datetime.fromtimestamp(token_details["exp"]), datetime.now())
+    if token_details["state"] == "Valid Refresh Token":
+        jti = token_details["jti"]
+        new_access_token = create_access_token(user_data=token_details["user"], jti=jti)
 
         return JSONResponse(content={"access_token": new_access_token})
 
-    raise InvalidToken
+    return JSONResponse(
+        content={"detail": token_details["state"]},
+        status_code=status.HTTP_401_UNAUTHORIZED
+        )
 
 
 @auth_router.get("/me", response_model=UserBooksModel)
@@ -199,10 +198,11 @@ async def get_current_user(
 
 
 @auth_router.get("/logout")
-async def revoke_token(token_details: dict = Depends(access_token_bearer)):
+async def revoke_token(token_details: dict = Depends(refresh_token_bearer)):
+
     jti = token_details["jti"]
 
-    await add_jti_to_logout(jti)
+    await remove_jti_from_logout(jti)
 
     return JSONResponse(
         content={"message": "Logged Out Successfully"}, status_code=status.HTTP_200_OK
@@ -225,7 +225,7 @@ async def password_reset_request(email_data: EmailModel, passwords: PasswordRese
 
     token = create_url_safe_token({"email": email, "passwd_hash": passwd_hash})
 
-    link = f"http://{Config.DOMAIN}/api/v1/auth/password-reset-confirm/{token}"
+    link = f"http://{Config.DOMAIN}/api/{version}/auth/password-reset-confirm/{token}"
 
     html_message = f"""
     <h1>Reset Your Password</h1>

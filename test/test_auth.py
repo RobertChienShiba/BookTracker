@@ -1,13 +1,15 @@
 import pytest
 from unittest.mock import patch
 
-auth_prefix = f"/api/v1/auth"
+from src import version_prefix
+
+auth_prefix = f"{version_prefix}/auth"
 
 @patch("src.auth.service.UserService.get_user_by_email")
 def test_login_success(mock_user, test_client, test_user, test_session):
 
     mock_user.return_value = test_user
-    
+
     login_data = {
         "email": "test@example.com",
         "password": "secret"
@@ -19,7 +21,6 @@ def test_login_success(mock_user, test_client, test_user, test_session):
     data = response.json()
     assert data["message"] == "Login successful"
     assert "access_token" in data
-    assert "refresh_token" in data
 
     assert mock_user.called_once_with(login_data["email"], test_session)
 
