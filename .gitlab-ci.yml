@@ -45,7 +45,6 @@ build-image-job:       # This job runs in the build stage, which runs first.
     - ec2
     - shell
   before_script:
-    - sudo chmod -R 777 .;
     - export VERSION=$(grep -oP '(?<=version = ")[^"]+' src/__init__.py)-$CI_PIPELINE_IID
     - echo "VERSION=$VERSION" >> build.env
   script:
@@ -68,7 +67,7 @@ build-image-job:       # This job runs in the build stage, which runs first.
     DEPLOY_ENV: ""
     APP_PORT: ""
   before_script:
-    - sudo chmod -R 777 .;
+    - printenv
   script:
     - echo "Deploying application..."
     - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 
