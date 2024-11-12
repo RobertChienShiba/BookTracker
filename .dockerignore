@@ -8,3 +8,5 @@ README.md
 LICENSE
 .git/
 .gitlab-ci.yml
+.vscode
+.pytest_cache

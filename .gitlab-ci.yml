@@ -66,7 +66,8 @@ build-image-job:       # This job runs in the build stage, which runs first.
   variables:
     DEPLOY_ENV: ""
     APP_PORT: ""
-    ENDPOINT: ""
+  before_script:
+    - find . -name "*.pyc" -exec rm -f {} \;
   script:
     - echo "Deploying application..."
     - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 
@@ -78,7 +79,7 @@ build-image-job:       # This job runs in the build stage, which runs first.
 
   environment:
     name: $DEPLOY_ENV
-    url: http://$DOMAIN:$APP_PORT
+    url: http://$DOMAIN:$APP_PORT/api/$VERSION/docs
 
 
 deploy-to-dev-job:      # This job runs in the deploy stage.
