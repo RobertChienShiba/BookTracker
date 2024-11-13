@@ -4,7 +4,7 @@ from src.config import Config
 
 JTI_EXPIRY = 172800
 
-token_logout = aioredis.from_url(Config.REDIS_LOGOUT_URL)
+token_logout = aioredis.from_url(Config.REDIS_URL + '/1')
 
 async def add_jti_to_logout(jti: str) -> None:
     await token_logout.set(name=jti, value="", ex=JTI_EXPIRY)

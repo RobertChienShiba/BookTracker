@@ -9,7 +9,7 @@ from src.config import Config
 
 import logging
 
-broker = RedisBroker(url=Config.REDIS_MQ_URL)
+broker = RedisBroker(url=Config.REDIS_URL + '/1')
 broker.add_middleware(AsyncIO())
 dramatiq.set_broker(broker)
 

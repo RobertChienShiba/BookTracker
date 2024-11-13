@@ -84,6 +84,7 @@ run-nginx-job:
     APP_PORT: ""
     REDIS_PORT: ""
     DATABASE_URL: ""
+    REDIS_URL: ""
   script:
     - echo "Deploying application..."
     - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 
@@ -107,8 +108,10 @@ deploy-to-dev-job:      # This job runs in the deploy stage.
   variables:
     DEPLOY_ENV: development
     APP_PORT: 8080
-    REDIS_PORT: 6379
+    REDIS_PORT: 6380
     DATABASE_URL: ${DATABASE_DEV_URL}
+    REDIS_URL:: ${REDIS_DEV_URL}
+
 
 
 end-to-end-test-job:
@@ -129,8 +132,9 @@ deploy-to-prod-job:      # This job runs in the deploy stage.
   variables:
     DEPLOY_ENV: production
     APP_PORT: 8000
-    REDIS_PORT: 6380
+    REDIS_PORT: 6379
     DATABASE_URL: ${DATABASE_PROD_URL}
+    REDIS_URL:: ${REDIS_PROD_URL}
 
   # when: manual
 

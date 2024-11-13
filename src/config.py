@@ -5,8 +5,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     JWT_SECRET: str
     JWT_ALGORITHM: str
-    REDIS_LOGOUT_URL: str
-    REDIS_MQ_URL: str
+    REDIS_URL: str
     MAIL_FROM: str
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
