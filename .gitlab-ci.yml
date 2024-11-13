@@ -24,7 +24,7 @@ unit-test-job:   # This job runs in the test stage.
     - ec2
     - docker
   before_script:
-    - export REDIS_LOGOUT_URL="redis://localhost:6379/0"
+    - export REDIS_URL="redis://localhost:6379/0"
     - export DATABASE_URL=${DATABASE_TEST_URL}
     - apt-get update && apt-get install -y redis-server && redis-server --daemonize yes
     - pip install --no-cache-dir -r requirements.txt
