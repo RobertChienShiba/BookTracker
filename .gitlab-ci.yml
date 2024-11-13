@@ -101,6 +101,7 @@ deploy-to-dev-job:      # This job runs in the deploy stage.
   extends: .deploy  
   needs:
     - build-image-job
+    - run-nginx-job
   variables:
     DEPLOY_ENV: development
     APP_PORT: 8080
@@ -120,6 +121,7 @@ deploy-to-prod-job:      # This job runs in the deploy stage.
   extends: .deploy  
   needs:
     - build-image-job
+    - run-nginx-job
     - end-to-end-test-job
   variables:
     DEPLOY_ENV: production
