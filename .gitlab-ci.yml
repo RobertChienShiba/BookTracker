@@ -55,6 +55,21 @@ build-image-job:       # This job runs in the build stage, which runs first.
     when: on_success
     reports:
       dotenv: build.env
+      
+
+run-nginx-job:
+  stage: build
+  needs:
+    - unit-test-job
+  tags:
+    - ec2
+    - shell
+  before_script:
+    - docker network create development && docker network create production
+  script:
+    - echo "Deploying Nginx..."
+    - docker compose -f docker-compose-nginx.yml down && docker compose -f docker-compose-nginx.yml up -d
+    - echo "Nginx successfully deployed."
 
 
 .deploy:
@@ -66,20 +81,19 @@ build-image-job:       # This job runs in the build stage, which runs first.
   variables:
     DEPLOY_ENV: ""
     APP_PORT: ""
-  # before_script:
-  #   - printenv
+    REDIS_PORT: ""
   script:
     - echo "Deploying application..."
     - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 
     - export IMAGE_TAG=$VERSION 
 
-    - docker-compose down && docker-compose up -d
+    - docker compose down && docker compose up -d
 
     - echo "Application successfully deployed."
 
   environment:
     name: $DEPLOY_ENV
-    url: http://$DOMAIN:$APP_PORT/api/$VERSION/docs
+    url: http://$DOMAIN:$APP_PORT/api/$(echo "$VERSION" | cut -d '-' -f 1)/docs
 
 
 deploy-to-dev-job:      # This job runs in the deploy stage.
@@ -90,26 +104,29 @@ deploy-to-dev-job:      # This job runs in the deploy stage.
   variables:
     DEPLOY_ENV: development
     APP_PORT: 8080
+    REDIS_PORT: 6379
 
 
-# end-to-end-test-job:
-#   stage: deploy_dev
-#   needs:
-#     - deploy-to-dev-job
-#   script:
-#     - echo "running end to end tests"
+end-to-end-test-job:
+  stage: deploy_dev
+  needs:
+    - deploy-to-dev-job
+  script:
+    - echo "running end to end tests"
 
 
-# deploy-to-prod-job:      # This job runs in the deploy stage.
-#   stage: deploy_prod  # It only runs when *both* jobs in the test stage complete successfully.
-#   extends: .deploy  
-#   needs:
-#     - build-image-job
-#     - end-to-end-test-job
-#   variables:
-#     DEPLOY_ENV: production
-#     APP_PORT: 80
-  # when: manual
+deploy-to-prod-job:      # This job runs in the deploy stage.
+  stage: deploy_prod  # It only runs when *both* jobs in the test stage complete successfully.
+  extends: .deploy  
+  needs:
+    - build-image-job
+    - end-to-end-test-job
+  variables:
+    DEPLOY_ENV: production
+    APP_PORT: 8000
+    REDIS_PORT: 6380
+
+  when: manual
 
 
 include:

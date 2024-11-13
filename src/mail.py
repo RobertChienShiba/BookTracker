@@ -1,3 +1,32 @@
+from fastapi_mail import FastMail, ConnectionConfig, MessageSchema, MessageType
+
+from src.config import Config
+
+
+mail_config = ConnectionConfig(
+    MAIL_USERNAME=Config.MAIL_USERNAME,
+    MAIL_PASSWORD=Config.MAIL_PASSWORD,
+    MAIL_FROM=Config.MAIL_FROM,
+    MAIL_PORT=587,
+    MAIL_SERVER=Config.MAIL_SERVER,
+    MAIL_FROM_NAME=Config.MAIL_FROM_NAME,
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True,
+)
+
+mail = FastMail(config=mail_config)
+
+def create_message(recipients: list[str], subject: str, body: str):
+
+    message = MessageSchema(
+        recipients=recipients, subject=subject, body=body, subtype=MessageType.html
+    )
+
+    return message
+
+
 # import os
 # import base64
 
@@ -5,8 +34,6 @@
 # from google.oauth2.credentials import Credentials
 # from google_auth_oauthlib.flow import InstalledAppFlow
 # from email.mime.text import MIMEText
-
-from src.config import Config
 
 # 設置 OAuth 範圍
 # SCOPES = ['https://mail.google.com/']
@@ -36,28 +63,3 @@ from src.config import Config
 #     raw_message = {'raw': base64.urlsafe_b64encode(message.as_bytes()).decode()}
 
 #     return raw_message
-
-from fastapi_mail import FastMail, ConnectionConfig, MessageSchema, MessageType
-
-mail_config = ConnectionConfig(
-    MAIL_USERNAME=Config.MAIL_USERNAME,
-    MAIL_PASSWORD=Config.MAIL_PASSWORD,
-    MAIL_FROM=Config.MAIL_FROM,
-    MAIL_PORT=587,
-    MAIL_SERVER=Config.MAIL_SERVER,
-    MAIL_FROM_NAME=Config.MAIL_FROM_NAME,
-    MAIL_STARTTLS=True,
-    MAIL_SSL_TLS=False,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=True,
-)
-
-mail = FastMail(config=mail_config)
-
-def create_message(recipients: list[str], subject: str, body: str):
-
-    message = MessageSchema(
-        recipients=recipients, subject=subject, body=body, subtype=MessageType.html
-    )
-
-    return message
