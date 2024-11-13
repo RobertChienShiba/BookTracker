@@ -7,7 +7,7 @@ services:
     restart: always
     
     volumes:
-      - .:/app
+      - /home/gitlab-runner/${DEPLOY_ENV}/:/app
 
     environment: 
       - DATABASE_URL=${DATABASE_URL}
@@ -52,7 +52,7 @@ services:
     command: bash worker.sh
 
     volumes:
-      - .:/app
+      - /home/gitlab-runner/${DEPLOY_ENV}/:/app
 
     depends_on:
       - redis

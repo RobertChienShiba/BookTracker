@@ -11,7 +11,7 @@ from src.config import Config
 
 passwd_context = CryptContext(schemes=["bcrypt"])
 
-ACCESS_TOKEN_EXPIRY = 60
+ACCESS_TOKEN_EXPIRY = 600
 
 serializer = URLSafeTimedSerializer(
     secret_key=Config.JWT_SECRET, salt="email-configuration"

@@ -113,7 +113,6 @@ deploy-to-dev-job:      # This job runs in the deploy stage.
     REDIS_URL: ${REDIS_DEV_URL}
 
 
-
 end-to-end-test-job:
   stage: deploy_dev
   needs:
