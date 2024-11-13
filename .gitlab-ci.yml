@@ -24,7 +24,7 @@ unit-test-job:   # This job runs in the test stage.
     - ec2
     - docker
   before_script:
-    - export REDIS_URL="redis://localhost:6379/0"
+    - export REDIS_URL="redis://localhost:6379"
     - export DATABASE_URL=${DATABASE_TEST_URL}
     - apt-get update && apt-get install -y redis-server && redis-server --daemonize yes
     - pip install --no-cache-dir -r requirements.txt
@@ -110,7 +110,7 @@ deploy-to-dev-job:      # This job runs in the deploy stage.
     APP_PORT: 8080
     REDIS_PORT: 6380
     DATABASE_URL: ${DATABASE_DEV_URL}
-    REDIS_URL:: ${REDIS_DEV_URL}
+    REDIS_URL: ${REDIS_DEV_URL}
 
 
 
@@ -134,7 +134,7 @@ deploy-to-prod-job:      # This job runs in the deploy stage.
     APP_PORT: 8000
     REDIS_PORT: 6379
     DATABASE_URL: ${DATABASE_PROD_URL}
-    REDIS_URL:: ${REDIS_PROD_URL}
+    REDIS_URL: ${REDIS_PROD_URL}
 
   # when: manual
 
