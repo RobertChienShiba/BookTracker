@@ -25,6 +25,7 @@ unit-test-job:   # This job runs in the test stage.
     - docker
   before_script:
     - export REDIS_LOGOUT_URL="redis://localhost:6379/0"
+    - export DATABASE_URL=${DATABASE_TEST_URL}
     - apt-get update && apt-get install -y redis-server && redis-server --daemonize yes
     - pip install --no-cache-dir -r requirements.txt
   script:
@@ -45,7 +46,7 @@ build-image-job:       # This job runs in the build stage, which runs first.
     - ec2
     - shell
   before_script:
-    - export VERSION=$(grep -oP '(?<=version = ")[^"]+' src/__init__.py)-$CI_PIPELINE_IID
+    - export VERSION=$(grep -oP '(?<=version = ")[^"]+' src/__init__.py)
     - echo "VERSION=$VERSION" >> build.env
   script:
     - echo "Building Docker Image..."
@@ -82,6 +83,7 @@ run-nginx-job:
     DEPLOY_ENV: ""
     APP_PORT: ""
     REDIS_PORT: ""
+    DATABASE_URL: ""
   script:
     - echo "Deploying application..."
     - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 
@@ -93,7 +95,7 @@ run-nginx-job:
 
   environment:
     name: $DEPLOY_ENV
-    url: http://$DOMAIN:$APP_PORT/api/$(echo "$VERSION" | cut -d '-' -f 1)/docs
+    url: http://$DOMAIN:$APP_PORT/api/$VERSION/docs
 
 
 deploy-to-dev-job:      # This job runs in the deploy stage.
@@ -106,6 +108,7 @@ deploy-to-dev-job:      # This job runs in the deploy stage.
     DEPLOY_ENV: development
     APP_PORT: 8080
     REDIS_PORT: 6379
+    DATABASE_URL: ${DATABASE_DEV_URL}
 
 
 end-to-end-test-job:
@@ -127,8 +130,9 @@ deploy-to-prod-job:      # This job runs in the deploy stage.
     DEPLOY_ENV: production
     APP_PORT: 8000
     REDIS_PORT: 6380
+    DATABASE_URL: ${DATABASE_PROD_URL}
 
-  when: manual
+  # when: manual
 
 
 include:
