@@ -60,7 +60,7 @@ async def resend_mail(emails: EmailModel):
 
     token = create_url_safe_token({"email": email})
 
-    link = f"http://{Config.DOMAIN}/api/{version}/auth/verify/{token}"
+    link = f"http://{Config.DOMAIN}:{Config.APP_PORT}/api/{version}/auth/verify/{token}"
 
     html = f"""
     <h1>Verify your Email</h1>
@@ -95,7 +95,7 @@ async def create_user_Account(
 
     token = create_url_safe_token({"email": email})
 
-    link = f"http://{Config.DOMAIN}/api/{version}/auth/verify/{token}"
+    link = f"http://{Config.DOMAIN}:{Config.APP_PORT}/api/{version}/auth/verify/{token}"
 
     html = f"""
     <h1>Verify your Email</h1>
@@ -225,7 +225,7 @@ async def password_reset_request(email_data: EmailModel, passwords: PasswordRese
 
     token = create_url_safe_token({"email": email, "passwd_hash": passwd_hash})
 
-    link = f"http://{Config.DOMAIN}/api/{version}/auth/password-reset-confirm/{token}"
+    link = f"http://{Config.DOMAIN}:{Config.APP_PORT}/api/{version}/auth/password-reset-confirm/{token}"
 
     html_message = f"""
     <h1>Reset Your Password</h1>

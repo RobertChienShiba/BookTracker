@@ -25,6 +25,7 @@ unit-test-job:   # This job runs in the test stage.
     - docker
   before_script:
     - export REDIS_URL="redis://localhost:6379"
+    - export APP_PORT="8080"
     - apt-get update && apt-get install -y redis-server && redis-server --daemonize yes
     - pip install --no-cache-dir -r requirements.txt
   script:
@@ -82,7 +83,8 @@ run-nginx-job:
     DEPLOY_ENV: ""
     APP_PORT: ""
     REDIS_PORT: ""
-
+  before_script:
+    - rsync -av --exclude='.git' . /home/gitlab-runner/${DEPLOY_ENV}
   script:
     - echo "Deploying application..."
     - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 

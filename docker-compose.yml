@@ -21,7 +21,8 @@ services:
       - MAIL_SERVER=${MAIL_SERVER}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME}
       - DOMAIN=${DOMAIN}
-      
+      - APP_PORT=${APP_PORT}
+
     ports:
       - "${APP_PORT}:8000"
 
@@ -69,7 +70,8 @@ services:
       - MAIL_SERVER=${MAIL_SERVER}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME}
       - DOMAIN=${DOMAIN}
-
+      - APP_PORT=${APP_PORT}
+      
     networks:
       - app-network
   
