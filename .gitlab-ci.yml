@@ -58,19 +58,17 @@ build-image-job:       # This job runs in the build stage, which runs first.
       dotenv: build.env
       
 
-run-nginx-job:
+build-network-job:
   stage: build
   needs:
     - unit-test-job
   tags:
     - ec2
     - shell
-  before_script:
-    - docker network create development && docker network create production
   script:
-    - echo "Deploying Nginx..."
-    - docker compose -f docker-compose-nginx.yml down && docker compose -f docker-compose-nginx.yml up -d
-    - echo "Nginx successfully deployed."
+    - echo "Building Docker Network..."
+    - docker network create development && docker network create production
+    - echo "Build complete."
 
 
 .deploy:
@@ -88,6 +86,8 @@ run-nginx-job:
   script:
     - echo "Deploying application..."
     - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 
+    - export COMPOSE_PATH_SEPARATOR=;
+    - export COMPOSE_FILE=docker-compose.yml;docker-compose-${DEPLOY_ENV}.yml
     - export IMAGE_TAG=$VERSION 
 
     - docker compose down && docker compose up -d
@@ -104,11 +104,11 @@ deploy-to-dev-job:      # This job runs in the deploy stage.
   extends: .deploy  
   needs:
     - build-image-job
-    - run-nginx-job
+    - build-network-job
   variables:
     DEPLOY_ENV: development
     APP_PORT: 8080
-    REDIS_PORT: 6380
+    DOMAIN: localhost
 
 
 end-to-end-test-job:
@@ -124,12 +124,11 @@ deploy-to-prod-job:      # This job runs in the deploy stage.
   extends: .deploy  
   needs:
     - build-image-job
-    - run-nginx-job
+    - build-network-job
     - end-to-end-test-job
   variables:
     DEPLOY_ENV: production
-    APP_PORT: 8000
-    REDIS_PORT: 6379
+    APP_PORT: 80
 
   # when: manual
 

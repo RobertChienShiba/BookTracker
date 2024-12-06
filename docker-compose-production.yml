@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  web:
+    ports:
+      - 8000
+  
+  redis:
+    ports:
+      - 6379:6379
+
+
+  nginx:
+    image: nginx
+
+    restart: always
+
+    ports:
+      - 80:80
+      - 443:443
+    
+    volumes:
+      - ./nginx/bookly.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt/options-ssl-nginx.conf:/etc/nginx/options-ssl-nginx.conf
+
+    networks:
+      - app-network
+
+    secrets:
+       ssl_fullchain:
+          file: /etc/letsencrypt/live/book-registration.ddns.net/fullchain.pem
+       ssl_privkey:
+          file: /etc/letsencrypt/live/book-registration.ddns.net/privkey.pem
+       ssl_dhparams:
+          file: /etc/letsencrypt/ssl-dhparams.pem

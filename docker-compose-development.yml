@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  web:
+    ports:
+      - ${APP_PORT}:8000
+
+  redis:
+    ports:
+      - 6380:6379

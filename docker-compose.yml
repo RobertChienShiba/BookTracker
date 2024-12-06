@@ -23,27 +23,36 @@ services:
       - DOMAIN=${DOMAIN}
       - APP_PORT=${APP_PORT}
 
-    ports:
-      - "${APP_PORT}:8000"
-
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
     networks:
       - app-network
 
+    healthcheck:
+      test: ["CMD", "bash", "./healthcheck.sh"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+
+    
   redis:
     image: redis
 
     restart: always
 
-    ports:
-     - "${REDIS_PORT}:6379"
-
     networks:
       - app-network
-        # aliases:
-        #   - redis
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+
 
   worker:
     image: ${IMAGE_NAME}:${IMAGE_TAG}
@@ -56,7 +65,8 @@ services:
       - /home/gitlab-runner/${DEPLOY_ENV}:/app
 
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
     environment:
       - DATABASE_URL=${DATABASE_URL}
@@ -74,31 +84,10 @@ services:
       
     networks:
       - app-network
-  
-  # nginx:
-  #   image: nginx
 
-  #   restart: always
-
-  #   ports:
-  #     - 80:80
-  #     - 443:443
-    
-  #   volumes:
-  #     - ./nginx/bookly.conf:/etc/nginx/conf.d/default.conf
-  #     - /etc/letsencrypt/live/book-registration.ddns.net/fullchain.pem:/etc/ssl/certs/fullchain.pem
-  #     - /etc/letsencrypt/live/book-registration.ddns.net/privkey.pem:/etc/ssl/private/privkey.pem
-  #     - /etc/letsencrypt/options-ssl-nginx.conf:/etc/nginx/options-ssl-nginx.conf
-  #     - /etc/letsencrypt/ssl-dhparams.pem:/etc/nginx/ssl-dhparams.pem
-
-  #   networks:
-  #     - app-network
-
-# networks:
-#   app-network:
-#     driver: bridge
 
 networks:
   app-network:
     external:
-      name: ${DEPLOY_ENV}
+      name: ${DEPLOY_DEV}
+  
