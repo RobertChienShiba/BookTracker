@@ -1,6 +1,6 @@
 .dockerignore
 Dockerfile
-docker-compose.yml
+docker-compose*.yml
 nginx/
 test/
 .env.example
