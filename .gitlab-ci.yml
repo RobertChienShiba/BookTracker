@@ -86,8 +86,8 @@ build-network-job:
   script:
     - echo "Deploying application..."
     - export COMPOSE_PROJECT_NAME=$DEPLOY_ENV 
-    - export COMPOSE_PATH_SEPARATOR=;
-    - export COMPOSE_FILE=docker-compose.yml;docker-compose-${DEPLOY_ENV}.yml
+    - export COMPOSE_PATH_SEPARATOR=":"
+    - export COMPOSE_FILE="docker-compose.yml:docker-compose-${DEPLOY_ENV}.yml"
     - export IMAGE_TAG=$VERSION 
 
     - docker compose down && docker compose up -d
