@@ -1,10 +1,22 @@
-version: "3.9"
+
 
 services:
   web:
     ports:
       - ${APP_PORT}:8000
+    volumes:
+      - /home/gitlab-runner/development:/app
 
   redis:
     ports:
       - 6380:6379
+
+  worker:
+    volumes:
+      - /home/gitlab-runner/development:/app
+
+
+networks:
+  app-network:
+    name: development
+    external: true

@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
   web:
@@ -6,9 +6,6 @@ services:
 
     restart: always
     
-    volumes:
-      - /home/gitlab-runner/${DEPLOY_ENV}:/app
-
     environment: 
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
@@ -61,9 +58,6 @@ services:
 
     command: bash worker.sh
 
-    volumes:
-      - /home/gitlab-runner/${DEPLOY_ENV}:/app
-
     depends_on:
       redis:
         condition: service_healthy
@@ -85,9 +79,4 @@ services:
     networks:
       - app-network
 
-
-networks:
-  app-network:
-    external:
-      name: ${DEPLOY_DEV}
   

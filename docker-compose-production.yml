@@ -1,13 +1,19 @@
-version: "3.9"
+
 
 services:
   web:
     ports:
       - 8000
-  
+    volumes:
+      - /home/gitlab-runner/production:/app
+
   redis:
     ports:
       - 6379:6379
+
+  worker:
+    volumes:
+      - /home/gitlab-runner/production:/app
 
 
   nginx:
@@ -27,9 +33,21 @@ services:
       - app-network
 
     secrets:
-       ssl_fullchain:
-          file: /etc/letsencrypt/live/book-registration.ddns.net/fullchain.pem
-       ssl_privkey:
-          file: /etc/letsencrypt/live/book-registration.ddns.net/privkey.pem
-       ssl_dhparams:
-          file: /etc/letsencrypt/ssl-dhparams.pem
+      - ssl_fullchain
+      - ssl_privkey
+      - ssl_dhparams
+
+
+secrets:
+  ssl_fullchain:
+    file: /etc/letsencrypt/live/book-registration.ddns.net/fullchain.pem
+  ssl_privkey:
+    file: /etc/letsencrypt/live/book-registration.ddns.net/privkey.pem
+  ssl_dhparams:
+    file: /etc/letsencrypt/ssl-dhparams.pem
+
+
+networks:
+  app-network:
+    name: production
+    external: true
