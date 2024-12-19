@@ -57,5 +57,4 @@ def mock_token():
     token["user"] = user_data
     token["exp"] = (datetime.now(timezone.utc) + timedelta(seconds=3600)).timestamp()
     token["jti"] = str(uuid.uuid4())
-    token["state"] = "Valid Refresh Token"
     return token

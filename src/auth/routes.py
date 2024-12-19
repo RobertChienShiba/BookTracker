@@ -6,13 +6,13 @@ from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.db.main import get_session
-from src.db.redis import add_jti_to_logout, remove_jti_from_logout
+from src.db.redis import add_jti_to_logout, remove_jti_from_logout, token_in_logout
 
 from .dependencies import (
     AccessTokenBearer,
-    RefreshTokenBearer,
     RoleChecker,
     get_current_user,
+    get_refresh_id_from_cookie,
 )
 from .schemas import (
     UserBooksModel,
@@ -28,6 +28,7 @@ from .utils import (
     generate_passwd_hash,
     create_url_safe_token,
     decode_url_safe_token,
+    ACCESS_TOKEN_EXPIRY,
 )
 from src.errors import UserAlreadyExists, UserNotFound, InvalidCredentials, InvalidToken
 from src.config import Config
@@ -37,7 +38,6 @@ from src.bg_task import send_email
 auth_router = APIRouter()
 user_service = UserService()
 access_token_bearer = AccessTokenBearer()
-refresh_token_bearer = RefreshTokenBearer()
 role_checker = RoleChecker(["admin", "user"])
 version = "1.1.1"
 
@@ -151,19 +151,19 @@ async def login_users(
         password_valid = verify_password(password, user.password_hash)
 
         if password_valid:
-            jti = str(uuid.uuid4())
             access_token = create_access_token(
                 user_data={
                     "email": user.email,
                     "user_uid": user.uid,
                     "role": user.role,
                 },
-                jti=jti
+                jti=str(uuid.uuid4())
             )
             
-            await add_jti_to_logout(jti)
+            refresh_id = str(uuid.uuid4())
+            await add_jti_to_logout(refresh_id, user.email)
             
-            return JSONResponse(
+            response = JSONResponse(
                 content={
                     "message": "Login successful",
                     "access_token": access_token,
@@ -171,23 +171,62 @@ async def login_users(
                 }
             )
 
+            response.set_cookie(
+                key="refresh_id",
+                value=refresh_id,
+                httponly=True,
+                secure=False,
+                # secure=True,
+                max_age=172800,
+            )
+
+            return response
+
     raise InvalidCredentials()
 
 
 @auth_router.get("/refresh_token")
-async def get_new_access_token(token_details: dict = Depends(refresh_token_bearer)):
+async def get_new_access_token(refresh_id: dict = Depends(get_refresh_id_from_cookie), session: AsyncSession = Depends(get_session)):
 
-    # print(token_details["state"], datetime.fromtimestamp(token_details["exp"]), datetime.now())
-    if token_details["state"] == "Valid Refresh Token":
-        jti = token_details["jti"]
-        new_access_token = create_access_token(user_data=token_details["user"], jti=jti)
+    user_email = await token_in_logout(refresh_id)
 
-        return JSONResponse(content={"access_token": new_access_token})
-
-    return JSONResponse(
-        content={"detail": token_details["state"]},
-        status_code=status.HTTP_401_UNAUTHORIZED
+    if not refresh_id or not user_email:
+        return JSONResponse(
+            content={"detail": "Invalid refresh token !!!"},
+            status_code=status.HTTP_401_UNAUTHORIZED
         )
+    
+    user = await user_service.get_user_by_email(user_email, session)
+    access_token = create_access_token(
+        user_data={
+            "email": user.email,
+            "user_uid": user.uid,
+            "role": user.role,
+        },
+        jti=str(uuid.uuid4())
+    )
+
+    await remove_jti_from_logout(refresh_id)
+    refresh_id = str(uuid.uuid4())
+    await add_jti_to_logout(refresh_id, user.email)
+
+    response = JSONResponse(
+                content={
+                    "access_token": access_token,
+                    "user": {"email": user.email, "uid": user.uid},
+                }
+            )
+
+    response.set_cookie(
+        key="refresh_id",
+        value=refresh_id,
+        httponly=True,
+        secure=False,
+        # secure=True,
+        max_age=172800,
+    )
+
+    return response
 
 
 @auth_router.get("/me", response_model=UserBooksModel)
@@ -198,15 +237,25 @@ async def get_current_user(
 
 
 @auth_router.get("/logout")
-async def revoke_token(token_details: dict = Depends(refresh_token_bearer)):
+async def revoke_token(token_details: dict = Depends(access_token_bearer), refresh_id: str = Depends(get_refresh_id_from_cookie)):
 
-    jti = token_details["jti"]
+    await remove_jti_from_logout(refresh_id)
+    await add_jti_to_logout(token_details["jti"], "Invalid", ACCESS_TOKEN_EXPIRY)
 
-    await remove_jti_from_logout(jti)
-
-    return JSONResponse(
+    response = JSONResponse(
         content={"message": "Logged Out Successfully"}, status_code=status.HTTP_200_OK
     )
+
+    response.set_cookie(
+        key="refresh_id",
+        value="",
+        httponly=True,
+        secure=False,
+        # secure=True,
+        max_age=0,
+    )
+
+    return response
 
 
 @auth_router.post("/password-reset-request")

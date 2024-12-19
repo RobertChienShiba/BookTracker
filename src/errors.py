@@ -4,73 +4,73 @@ from fastapi.responses import JSONResponse
 from fastapi import FastAPI, status
 from sqlalchemy.exc import SQLAlchemyError
 
-class BooklyException(Exception):
-    """This is the base class for all bookly errors"""
+class BookTrackerException(Exception):
+    """This is the base class for all booktracker errors"""
 
     pass
 
 
-class InvalidToken(BooklyException):
+class InvalidToken(BookTrackerException):
     """User has provided an invalid or expired token"""
 
     pass
 
 
-class RevokedToken(BooklyException):
+class RevokedToken(BookTrackerException):
     """User has provided a token that has been revoked"""
 
     pass
 
 
-class AccessTokenRequired(BooklyException):
+class AccessTokenRequired(BookTrackerException):
     """User has provided a refresh token when an access token is needed"""
 
     pass
 
 
-class RefreshTokenRequired(BooklyException):
+class RefreshTokenRequired(BookTrackerException):
     """User has provided an access token when a refresh token is needed"""
 
     pass
 
 
-class UserAlreadyExists(BooklyException):
+class UserAlreadyExists(BookTrackerException):
     """User has provided an email for a user who exists during sign up."""
 
     pass
 
 
-class InvalidCredentials(BooklyException):
+class InvalidCredentials(BookTrackerException):
     """User has provided wrong email or password during log in."""
 
     pass
 
 
-class InsufficientPermission(BooklyException):
+class InsufficientPermission(BookTrackerException):
     """User does not have the neccessary permissions to perform an action."""
 
     pass
 
 
-class BookNotFound(BooklyException):
+class BookNotFound(BookTrackerException):
     """Book Not found"""
 
     pass
 
 
-class TagNotFound(BooklyException):
+class TagNotFound(BookTrackerException):
     """Tag Not found"""
 
     pass
 
 
-class TagAlreadyExists(BooklyException):
+class TagAlreadyExists(BookTrackerException):
     """Tag already exists"""
 
     pass
 
 
-class UserNotFound(BooklyException):
+class UserNotFound(BookTrackerException):
     """User Not found"""
 
     pass
@@ -81,13 +81,13 @@ class AccountNotVerified(Exception):
     pass
 
 
-class ReviewNotFound(BooklyException):
+class ReviewNotFound(BookTrackerException):
     """Review Not found"""
 
     pass
 
 
-class ReviewExists(BooklyException):
+class ReviewExists(BookTrackerException):
     """Review already exists"""
 
     pass
@@ -97,7 +97,7 @@ def create_exception_handler(
     status_code: int, initial_detail: Any
 ) -> Callable[[Request, Exception], JSONResponse]:
 
-    async def exception_handler(request: Request, exc: BooklyException):
+    async def exception_handler(request: Request, exc: BookTrackerException):
 
         return JSONResponse(content=initial_detail, status_code=status_code)
 
