@@ -9,24 +9,25 @@ from .middleware import register_middleware
 
 version = "1.1.1"
 
-description = """
+description = \
+"""
 A REST API for a book review web service.
 
 This REST API is able to;
 - Create Read Update And delete books
 - Add reviews to books
 - Add tags to Books e.t.c.
-    """
+"""
 
 version_prefix =f"/api/{version}"
 
 app = FastAPI(
-    title="Bookly",
+    title="BookTracker",
     description=description,
     version=version,
     license_info={"name": "MIT License", "url": "https://opensource.org/license/mit"},
     contact={
-        "name": "Bookly",
+        "name": "BookTracker",
         "email": "bookly162@gmail.co",
     },
     openapi_url=f"{version_prefix}/openapi.json",

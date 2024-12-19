@@ -6,7 +6,6 @@ from fakeredis import FakeAsyncRedis
 from src.db.main import get_session
 from src.auth.dependencies import get_current_user
 from src.books.routes import access_token_bearer
-from src.auth.routes import refresh_token_bearer
 from src import app
 from test.utils import(
     get_mock_session,
@@ -105,15 +104,6 @@ def test_tag_client(test_client):
 
     app.dependency_overrides.clear()
 
-
-@pytest.fixture
-def test_refresh_token_client(test_client):
-
-    app.dependency_overrides[refresh_token_bearer] = mock_token
-
-    yield test_client
-
-    app.dependency_overrides.clear()
 
 # ======================================== (Message Queue Worker) ===================================
 

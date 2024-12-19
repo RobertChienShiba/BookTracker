@@ -51,13 +51,6 @@ def test_user_verified(test_verified_client):
     assert result["is_verified"] is True
 
 
-def test_refresh_token(test_refresh_token_client):
-    response = test_refresh_token_client.get(f"{auth_prefix}/refresh_token", headers={"Authorization": "Bearer " + 'fake.jwt'})
-    assert response.status_code == 200
-    data = response.json()
-    assert "access_token" in data
-
-
 @pytest.mark.asyncio
 async def test_send_mail(test_client):
     test_email = {"email": "test@example.com"}

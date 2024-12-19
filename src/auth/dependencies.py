@@ -34,8 +34,7 @@ class AccessTokenBearer(HTTPBearer):
 
         token_data = decode_token(token)
 
-        if datetime.fromtimestamp(token_data["exp"]) <= datetime.now() or \
-        not await token_in_logout(token_data["jti"]):
+        if await token_in_logout(token_data["jti"]):
             raise InvalidToken()
 
         # print(token_data)
@@ -43,25 +42,8 @@ class AccessTokenBearer(HTTPBearer):
         return token_data
 
 
-class RefreshTokenBearer(HTTPBearer):
-    def __init__(self, auto_error=True):
-        super().__init__(auto_error=auto_error)
-
-    async def __call__(self, request: Request):
-        cred = await super().__call__(request)
-
-        token = cred.credentials
-        
-        token_data = decode_token(token)
-        
-        if datetime.fromtimestamp(token_data["exp"]) > datetime.now():
-            token_data["state"] = "Access Token has not expired yet"
-        elif not await token_in_logout(token_data["jti"]):
-            token_data["state"] = "Refresh Token has already expired"
-        else:
-            token_data["state"] = "Valid Refresh Token"
-
-        return token_data
+async def get_refresh_id_from_cookie(request: Request):
+    return request.cookies.get("refresh_id", None)
 
 
 async def get_current_user(

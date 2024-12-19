@@ -6,6 +6,7 @@ services:
       - ${APP_PORT}:8000
     volumes:
       - /home/gitlab-runner/development:/app
+      # - .:/app
 
   redis:
     ports:
@@ -14,6 +15,7 @@ services:
   worker:
     volumes:
       - /home/gitlab-runner/development:/app
+      # - .:/app
 
 
 networks:
