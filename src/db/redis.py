@@ -15,6 +15,9 @@ async def remove_jti_from_logout(jti:str) -> None:
 
 
 async def token_in_logout(jti: str) -> bool:
-    jti = await token_logout.get(jti)
+    if not jti:
+        return None
+    
+    status = await token_logout.get(jti)
 
-    return jti.decode('utf-8') if jti else None
+    return status.decode('utf-8') if status else None
