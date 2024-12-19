@@ -7,7 +7,7 @@ x-common-config: &common-config
   
   image: ${IMAGE_NAME:-booktracker}:${IMAGE_TAG:-latest}
 
-  # pull_policy: build
+  pull_policy: build
 
   restart: always
 
@@ -24,6 +24,9 @@ x-common-config: &common-config
     - MAIL_FROM_NAME=${MAIL_FROM_NAME}
     - DOMAIN=${DOMAIN}
     - APP_PORT=${APP_PORT}
+
+  env_file:
+    - ./.env
   
   depends_on:
     redis:
